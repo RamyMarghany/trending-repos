@@ -1,21 +1,23 @@
 // Modules
 import { useState, useEffect } from "react";
-// Components
-import { Container, Typography } from "@mui/material";
-import { RepoCard } from "../../components/molecules/RepoCard/RepoCard";
 // Hooks
 import { useFetch } from "../../hooks/useFetch/useFetch";
 // Utils
 import { saveStarredRepositories } from "../../lib/utils";
+// Components
+import { Box, Container, Typography, Alert } from "@mui/material";
+import { RepoCard } from "../../components/molecules/RepoCard/RepoCard";
+import { Dropdown } from "../../components/molecules/Dropdown/Dropdown";
 // Types
 import { Repository, Repos } from "../../types/definitions";
+import { Loading } from "../../components/molecules/Loading/Loading";
 
 export const TrendingRepos: React.FC = () => {
   // States
   const [repositories, setRepositories] = useState<Repository[]>([]);
   const [starredRepositories, setStarredRepositories] = useState<string[]>([]);
-
-  const { data } = useFetch<Repos>(
+  const [filterLanguage, setFilterLanguage] = useState<string>("");
+  const { data, hasError, isLoading } = useFetch<Repos>(
     `https://api.github.com/search/repositories?q=created:2017-01-10&sort=stars&order=desc`
   );
 
@@ -36,12 +38,34 @@ export const TrendingRepos: React.FC = () => {
     }
   }, []);
 
+  const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilterLanguage(event.target.value);
+  };
+
+  const filteredRepositories = repositories.filter((repo) => {
+    if (!filterLanguage) return true;
+    return repo.language === filterLanguage;
+  });
+
   return (
     <Container>
       <Typography variant="h4" sx={{ margin: 2 }}>
         TrendingRepos
       </Typography>
-      {repositories.map((repo) => (
+      {hasError && <Alert severity="error">Something went wrong!</Alert>}
+      {isLoading && <Loading />}
+      {repositories.length > 0 && (
+        <Box sx={{ display: "flex", marginBottom: 4 }}>
+          <label htmlFor="languageFilter">Filter by Language:</label>
+          <Dropdown
+            id="languageFilter"
+            onChange={handleFilterChange}
+            value={filterLanguage}
+            optionsList={["Python", "JavaScript", "Java", "TypeScript"]} // Pass options as props
+          />
+        </Box>
+      )}
+      {filteredRepositories.map((repo) => (
         <RepoCard
           key={repo.full_name}
           name={repo.full_name}

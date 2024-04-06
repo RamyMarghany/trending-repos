@@ -22,6 +22,9 @@ export const useFetch = <T,>(url?: string): FetchResponse<T> => {
         setHasError(false);
         try {
           const res = await fetch(apiUrl);
+          if (!res.ok) {
+            throw new Error("Network response was not ok");
+          }
           const json = await res.json();
           setData(json);
         } catch (error) {
