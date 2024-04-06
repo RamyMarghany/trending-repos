@@ -10,6 +10,9 @@ export const Navigation: React.FC = () => {
         <Button color="inherit" component={RouterLink} to="/">
           Home
         </Button>
+        <Button color="inherit" component={RouterLink} to="/star-repos">
+          Starred Repo
+        </Button>
       </Toolbar>
     </AppBar>
   );
